@@ -19,7 +19,9 @@ CXXFLAGS        = $(LANG) $(OPTS) $(PICKY)
 
 .PHONY: clean all
 
-all: aosmatvec.exe cscmatvec.exe
+#all: aosmatvec.exe cscmatvec.exe
+
+all: aosmatvec.exe
 
 # Rules for executables
 aosmatvec.exe: aosmatvec.o AOSMatrix.o Vector.o matvec583.o amath583IO.o
