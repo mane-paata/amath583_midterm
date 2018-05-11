@@ -18,17 +18,18 @@
 #include <vector>
 
 class CSRMatrix {
+
 public:
-  CSRMatrix(size_t M, size_t N) : is_open(false), num_rows_(M), num_cols_(N), row_indices_(num_rows_ + 1, 0) {}
+  CSRMatrix(size_t M, size_t N) : is_open(false), iRows(M), jCols(N), row_indices_(iRows + 1, 0) {}
 
   void openForPushBack() { is_open = true; }
 
   void closeForPushBack() {
     is_open = false;
-    for (size_t i = 0; i < num_rows_; ++i) {
+    for (size_t i = 0; i < iRows; ++i) {
       row_indices_[i + 1] += row_indices_[i];
     }
-    for (size_t i = num_rows_; i > 0; --i) {
+    for (size_t i = iRows; i > 0; --i) {
       row_indices_[i] = row_indices_[i - 1];
     }
     row_indices_[0] = 0;
@@ -36,8 +37,8 @@ public:
 
   void push_back(size_t i, size_t j, double value) {
     assert(is_open);
-    assert(i < num_rows_ && i >= 0);
-    assert(j < num_cols_ && j >= 0);
+    assert(i < iRows && i >= 0);
+    assert(j < jCols && j >= 0);
 
     ++row_indices_[i];
     col_indices_.push_back(j);
@@ -45,7 +46,7 @@ public:
   }
 
   void matvec(const Vector& x, Vector& y) const {
-    for (size_t i = 0; i < num_rows_; ++i) {
+    for (size_t i = 0; i < iRows; ++i) {
       for (size_t j = row_indices_[i]; j < row_indices_[i + 1]; ++j) {
         y(i) += storage_[j] * x(col_indices_[j]);
       }
@@ -60,28 +61,28 @@ public:
 
   void streamMatrix(std::ostream& outputFile) const {
 
-    outputFile << "AMATH 583 COOMATRIX" << std::endl;
-    outputFile << num_rows_ << " " << num_cols_ << std::endl;
-    outputFile << num_nonzeros() << std::endl;
+    outputFile << "AMATH 583 CSRMATRIX" << std::endl;
+    outputFile << iRows << " " << jCols << std::endl;
 
     // Write data
-    for (size_t i = 0; i < num_rows_; ++i) {
+    for (size_t i = 0; i < iRows; ++i) {
       for (size_t j = row_indices_[i]; j < row_indices_[i + 1]; ++j) {
-        outputFile << i << " " << col_indices_[j] << " " << storage_[j] << std::endl;
+        outputFile << storage_[j] << " ";
       }
+      outputFile << std::endl;
     }
 
     // Write tailer
     outputFile << "THIS IS THE END" << std::endl;
   }
 
-  size_t num_rows() const { return num_rows_; }
-  size_t num_cols() const { return num_cols_; }
+  size_t num_rows() const { return iRows; }
+  size_t num_cols() const { return jCols; }
   size_t num_nonzeros() const { return storage_.size(); }
 
 private:
   bool                is_open;
-  size_t              num_rows_, num_cols_;
+  size_t              iRows, jCols;
   std::vector<size_t> row_indices_, col_indices_;
   std::vector<double> storage_;
 };
