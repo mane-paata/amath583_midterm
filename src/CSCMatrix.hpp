@@ -25,24 +25,55 @@ class CSCMatrix {
 public:
   CSCMatrix() {}   // empty constructor
   
-  CSCMatrix(size_t M, size_t N) { /* write me */ }
-
-  void push_back(size_t i, size_t j, double val) { /* write me */ }
-
-  void closeForPushBack() { /* write me */ }
+  CSCMatrix(size_t M, size_t N) : is_open(false), num_rows_(M), num_cols_(N), col_indices_(num_cols_ + 1, 0) {}
 
   void openForPushBack() { is_open = true; }
+  
+  void closeForPushBack() {
+    is_open = false;
+    for (size_t i = 0; i < num_cols_; ++i) {
+      col_indices_[i + 1] += col_indices_[i];
+    }
+    for (size_t i = num_cols_; i > 0; --i) {
+      col_indices_[i] = col_indices_[i - 1];
+    }
+    col_indices_[0] = 0;
+  }
 
-  void clear() { /* write me */ }
+  void push_back(size_t i, size_t j, double value) {
+    assert(is_open);
+    assert(i < num_rows_ && i >= 0);
+    assert(j < num_cols_ && j >= 0);
 
-  void reserve(size_t n) { /* write me */ }
+    ++col_indices_[j];
+    row_indices_.push_back(i);
+    storage_.push_back(value);
+  }
+  
+  void clear() {
+    row_indices_.clear();
+    storage_.clear();
+    std::fill(col_indices_.begin(), col_indices_.end(), 0);
+  }
 
-  size_t num_rows() const { return 0; } /* fix me */
-  size_t num_cols() const { return 0; } /* fix me */
+  void reserve(size_t n) { 
+    storage_.reserve(n);
+    row_indices_.reserve(n);
+    col_indices_.reserve(n);
+  }
 
-  size_t numNonzeros() const { return 0; } /* fix me */
+  size_t num_rows() const { return num_rows_; }
+  size_t num_cols() const { return num_cols_; }
+  size_t num_nonzeros() const { return storage_.size(); }
 
-  void matvec(const Vector& x, Vector& y) const { /* write me */ }
+  void matvec(const Vector& x, Vector& y) const {
+    /* Review: mostly needs fixing */
+    for (size_t i = 0; i < num_cols_; ++i) {
+      for (size_t j = col_indices_[i]; j < col_indices_[i + 1]; ++j) {
+        y(i) += storage_[j] * x(row_indices_[j]);
+      }
+    }
+  }
 
   void readMatrix(std::string file) {    // read from file
                                          // write me 
