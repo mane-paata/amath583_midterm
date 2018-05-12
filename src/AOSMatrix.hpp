@@ -22,6 +22,8 @@
 
 #include "Vector.hpp"
 
+std::vector<std::string> split(const std::string&, char); // implemented in amath585IO.cpp
+
 class AOSMatrix {
 public:
     AOSMatrix() {} // default constructor
@@ -31,8 +33,14 @@ public:
     }
     
     void push_back(size_t i, size_t j, double val) {
-        assert(i < num_rows_ && i >= 0);
-        assert(j < num_cols_ && j >= 0);
+        if (i > num_rows_ || i < 0){
+            std::cout << "Error: Row number:"<< i << " not with in range (0 - "<< num_rows_ << ")" << std::endl;
+            throw; 
+        }
+        if(j > num_cols_ || j < 0){
+            std::cout << "Error: Col number:"<< j << " not with in range (0 - "<< num_cols_ << ")" << std::endl;
+            throw; 
+        }
 
         for (size_t k=0; k< storage_.size(); ++k){
             if (storage_[k].row == i && storage_[k].col == j){
@@ -64,13 +72,17 @@ public:
 
     size_t num_nonzeros() const { return storage_.size(); }
 
-    void readMatrix(std::string file) { // read from file
+    void readMatrix(std::string filename) {
+        std::ifstream inputFile(filename);
+        return readMatrix(inputFile);
+    }
+
+    void readMatrix(std::istream& inputStream) {
         std::string string_input;
-        std::ifstream inputStream(file);
 
         getline(inputStream, string_input);
         if (string_input.compare("AMATH 583 COOMATRIX") != 0) {
-            std::cout << "Error: Matrix file does not contain a header.";
+            std::cout << "Error: matrix file does not contain a header.";
             throw;
         }
 
@@ -79,63 +91,57 @@ public:
             clear();
             return;
         }
+
+        std::vector<std::string> line_data;
+        long num_rows, num_cols, size;
         
-        std::istringstream line(string_input);
-        long num_rows;
-        line >> num_rows;
-        if (num_rows < 0) {
-            std::cout << "Error: Matrix file contains invalid num rows";
+        line_data = split(string_input, ' ');
+        if (line_data.size() == 2){
+            num_rows = stol(line_data[0]);
+            num_cols = stol(line_data[1]);
+        }else {
+            std::cout << "Error: Invalid data found. Expected num_rows, num_cols. Found: "<< string_input<< std::endl;
             throw;
         }
 
-        long num_cols;
-        line >> num_cols;
+        if (num_rows < 0) {
+            std::cout << "Error: matrix file contains invalid num rows";
+            throw;
+        }
+
         if (num_cols < 0) {
             std::cout << "Error: matrix file contains invalid num columns";
             throw;
         }
 
         getline(inputStream, string_input);
-        long size = stol(string_input);
-        if (size < 0) {
-            std::cout << "Error: matrix file contains invalid num elements";
+        size = stol(string_input);
+        if(size < 0){
+            std::cout << "Error: matrix file contains invalid num non zero (size)";
             throw;
         }
 
-        num_rows_ = num_rows;
-        num_cols_ = num_cols;
+        num_rows_ = num_rows; num_cols_  = num_cols;
+        long                     row_index;
+        long                     col_index;
+        double                   value;
 
-        size_t row, col;
-        double val;
-        for (size_t i = 0; i < size; i++) {
-            getline(inputStream, string_input);
-            std::istringstream line(string_input);
-            std::string str;
-            bool invalidline = false;
-
-            // row
-            if(getline(line, str, ' ')) row = stol(str);
-            else                        invalidline = true;
-            
-            // col
-            if(getline(line, str, ' ')) col = stol(str);
-            else                        invalidline = true;
-            
-            // value
-            if(getline(line, str, ' ')) val = stod(str);
-            else                        invalidline = true;
-               
-            if (invalidline || getline(line, str, ' ')){
-                std::cout << "Error: Invalid entry in input file. Expected: row, col, val. Actual: "<< string_input << std::endl;
+        while (getline(inputStream, string_input) && string_input.compare("THIS IS THE END") != 0) {
+            line_data = split(string_input, ' ');
+            if (line_data.size() == 3) {
+                row_index = stol(line_data[0]);
+                col_index = stol(line_data[1]);
+                value     = stod(line_data[2]);
+                push_back(row_index, col_index, value);
+            } 
+            else {
+                std::cout << "Error: COO Matrix file contains invalid row";
                 throw;
             }
-            
-            push_back(row, col, val);
         }
 
-        getline(inputStream, string_input);
-        if (string_input.compare("THIS IS THE END") != 0) {
-            std::cout << "Error: vector file does not contain proper footer.";
+        if (string_input.compare("THIS IS THE END") != 0){
+            std::cout << "Error: Matrix file does not contain proper footer.";
             throw;
         }
     }
@@ -160,7 +166,7 @@ public:
 
     void matvec(const Vector& x, Vector& y) const {
         for(size_t k = 0; k < storage_.size(); ++k){
-            y(storage_[k].row) = storage_[k].val* x(storage_[k].col);
+            y(storage_[k].row) += storage_[k].val* x(storage_[k].col);
         }
     }
 
