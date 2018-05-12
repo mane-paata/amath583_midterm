@@ -42,7 +42,10 @@ Vector operator*(const COOMatrix& A, const Vector& x) {
   return y;
 }
 
-Vector operator*(const AOSMatrix& A, const Vector& x) { /* write me */
+Vector operator*(const AOSMatrix& A, const Vector& x) { 
+  Vector y(A.num_rows());
+  matvec(A, x, y);
+  return y;
 }
 
 Vector operator*(const CSRMatrix& A, const Vector& x) {
@@ -51,10 +54,11 @@ Vector operator*(const CSRMatrix& A, const Vector& x) {
   return y;
 }
 
-Vector operator*(const CSCMatrix& A, const Vector& x) { /* write me */
+Vector operator*(const CSCMatrix& A, const Vector& x) {
+  Vector y(A.num_rows());
+  matvec(A, x, y);
+  return y;
 }
-
-
 
 void zeroize(Vector& x) {
   for (size_t i = 0; i < x.num_rows(); ++i) {
@@ -135,8 +139,8 @@ void streamMatrix(const COOMatrix& A) { A.streamMatrix(std::cout); }
 void streamMatrix(const COOMatrix& A, std::ostream& outputFile) { A.streamMatrix(outputFile); }
 
 void piscetize(CSRMatrix& A, size_t xpoints, size_t ypoints) {
-  assert(A.numRows() == A.numCols());
-  assert(xpoints * ypoints == A.numRows());
+  assert(A.num_rows() == A.num_cols());
+  assert(xpoints * ypoints == A.num_rows());
 
   A.clear();
   A.openForPushBack();

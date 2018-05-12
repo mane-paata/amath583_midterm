@@ -10,7 +10,7 @@
 
 CXX             = c++
 
-OPTS            = -O3 -DNDEBUG # Also try -Ofast -march=native
+OPTS            =  -O3 -DNDEBUG # Also try -Ofast -march=native #
 LANG            = -std=c++11
 PICKY           = -Wall 
 
@@ -19,12 +19,10 @@ CXXFLAGS        = $(LANG) $(OPTS) $(PICKY)
 
 .PHONY: clean all
 
-#all: aosmatvec.exe cscmatvec.exe
-
-all: aosmatvec.exe
+all: aosmatvec.exe cscmatvec.exe
 
 # Rules for executables
-aosmatvec.exe: aosmatvec.o AOSMatrix.o Vector.o matvec583.o amath583IO.o
+aosmatvec.exe: aosmatvec.o AOSMatrix.o Vector.o matvec583.o amath583IO.o amath583.o
 	$(CXX) $(CXXFLAGS) $^ -o $@
 
 cscmatvec.exe: cscmatvec.o CSCMatrix.o Vector.o matvec583.o amath583IO.o

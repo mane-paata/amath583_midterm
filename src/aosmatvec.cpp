@@ -2,7 +2,7 @@
 
 #include "AOSMatrix.hpp"
 #include "amath583IO.hpp"
-
+#include "amath583.hpp"
 
 int main(int argc, char* argv[]){
 	
@@ -11,24 +11,19 @@ int main(int argc, char* argv[]){
 		return -1;
 	}
 
-	//std::filebuf fb;
-  //fb.open (argv[2], std::ios::out);
-  //std::ostream os(&fb);
-	
 	AOSMatrix A;
 	A.readMatrix(argv[1]);
-	//A.streamMatrix(os);
-
-	COOMatrix B = readCOOMatrix(argv[1]);
 
 	Vector x = readVector(argv[2]);
-	Vector b(x.num_rows());
-	Vector c(x.num_rows());
 
-	A.matvec(x,b);
-	writeVector(b,"mat_vec_aos.txt");
+	if (A.num_cols() != x.num_rows()){
+		std::cout << "Error: Matrix x Vector dimension mismatch" << std::endl ;
+		exit(-1);
+	}
 
-	B.matvec(x,c);
-	writeVector(c, "mat_vec_coo.txt");
+	Vector y = A * x;
+	writeVector(y,argv[3]);
+
+	return 0;
 }
 
