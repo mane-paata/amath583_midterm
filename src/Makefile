@@ -25,7 +25,7 @@ all: aosmatvec.exe cscmatvec.exe
 aosmatvec.exe: aosmatvec.o AOSMatrix.o Vector.o matvec583.o amath583IO.o amath583.o
 	$(CXX) $(CXXFLAGS) $^ -o $@
 
-cscmatvec.exe: cscmatvec.o CSCMatrix.o Vector.o matvec583.o amath583IO.o
+cscmatvec.exe: cscmatvec.o CSCMatrix.o Vector.o matvec583.o amath583IO.o amath583.o
 	$(CXX) $(CXXFLAGS) $^ -o $@
 
 # Generic rule for making object file from .cpp file

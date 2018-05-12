@@ -21,9 +21,7 @@ int main(int argc, char* argv[]){
 		exit(-1);
 	}
 
-	Vector y(A.num_cols());
-	A.matvec(x,y);
-	writeVector(y,argv[3]);
-
+	Vector y = A * x;
+	writeVector(y, argv[3]);
 	return 0;
 }

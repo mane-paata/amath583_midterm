@@ -46,10 +46,15 @@ public:
     assert(is_open);
     assert(i < num_rows_ && i >= 0);
     assert(j < num_cols_ && j >= 0);
+    
+    size_t pos = 0;
+    for (size_t k = 0; k < j; ++k){
+        pos += col_indices_[k];
+    }
 
     ++col_indices_[j];
-    row_indices_.push_back(i);
-    storage_.push_back(value);
+    row_indices_.insert(row_indices_.begin() + pos, i);
+    storage_.insert(storage_.begin() + pos, value);
   }
   
   void clear() {
@@ -71,7 +76,7 @@ public:
   void matvec(const Vector& x, Vector& y) const {
      for (size_t i = 0; i < num_cols_; ++i) {
       for (size_t j = col_indices_[i]; j < col_indices_[i + 1]; ++j) {
-        y(i) += storage_[j] * x(row_indices_[j]);
+        y(row_indices_[j]) += storage_[j] * x(i);
       }
     }
   }
@@ -127,6 +132,7 @@ public:
 
     num_rows_ = num_rows; num_cols_  = num_cols;
     reserve(size);
+    col_indices_.assign(num_cols+1, 0);
 
     long  row_index;
     long  col_index;
